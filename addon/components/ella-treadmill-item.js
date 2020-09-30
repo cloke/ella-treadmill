@@ -1,6 +1,6 @@
 import { lt } from '@ember/object/computed';
 import Component from '@ember/component';
-import { computed, get, getProperties } from '@ember/object';
+import { computed, get } from '@ember/object';
 import layout from '../templates/components/ella-treadmill-item';
 
 /**
@@ -198,11 +198,7 @@ export default Component.extend({
    * @readOnly
    */
   classRow: computed('fluctuate', 'index', 'columns', function() {
-    let {
-      fluctuate,
-      index,
-      columns
-    } = getProperties(this, 'fluctuate', 'index', 'columns');
+    let { fluctuate, index, columns } = this;
 
     let row = Math.floor((index % (fluctuate * columns)) / columns) + 1;
 
@@ -221,11 +217,7 @@ export default Component.extend({
    * @readOnly
    */
   classColumn: computed('index', 'columns', 'fluctuateColumn', function() {
-    let {
-      index,
-      columns,
-      fluctuateColumn
-    } = getProperties(this, 'index', 'columns', 'fluctuateColumn');
+    let { index, columns, fluctuateColumn } = this;
 
     let col = ((index % columns) % fluctuateColumn) + 1;
 
@@ -244,7 +236,7 @@ export default Component.extend({
    */
   isSampleItem: computed('parent.sampleItem', '_isSampleItem', {
     get() {
-      return get(this, '_isSampleItem') || (get(this, 'parent.sampleItem') === this);
+      return this._isSampleItem || (get(this, 'parent.sampleItem') === this);
     },
 
     set(key, value) {
@@ -261,13 +253,7 @@ export default Component.extend({
    * @readOnly
    */
   translateY: computed('height', 'index', 'pageSize', 'columns', 'heightUnit', function() {
-    let {
-      index,
-      height,
-      pageSize,
-      columns,
-      heightUnit
-    } = getProperties(this, 'height', 'index', 'pageSize', 'columns', 'heightUnit');
+    let { index, height, pageSize, columns, heightUnit } = this;
 
     let pageRows = Math.ceil(pageSize / columns);
 
@@ -284,7 +270,7 @@ export default Component.extend({
    * @readOnly
    */
   width: computed('columns', function() {
-    let columns = parseInt(get(this, 'columns'), 10) || 1;
+    let columns = parseInt(this.columns, 10) || 1;
 
     return 100 / columns;
   }),
@@ -312,11 +298,11 @@ export default Component.extend({
   },
 
   didRender() {
-    if (!get(this, 'isSampleItem')) {
+    if (!this.isSampleItem) {
       return;
     }
 
-    let element = get(this, 'element');
+    let element = this.element;
     let fn = get(this, 'on-update');
 
     if (element && typeof element.getBoundingClientRect === 'function' && typeof fn === 'function') {

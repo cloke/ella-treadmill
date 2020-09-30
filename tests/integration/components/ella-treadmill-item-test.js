@@ -1,7 +1,6 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
-import { get } from '@ember/object';
 import { run } from '@ember/runloop';
 import hbs from 'htmlbars-inline-precompile';
 
@@ -91,7 +90,7 @@ module('Integration | Component | ella treadmill item', function(hooks) {
 
     assert.equal(
       Math.round(geometry.top),
-      Math.round(comparison.top + (this.get('index') * comparison.height))
+      Math.round(comparison.top + (this.index * comparison.height))
     );
 
     this.set('index', 17);
@@ -101,7 +100,7 @@ module('Integration | Component | ella treadmill item', function(hooks) {
 
     assert.equal(
       Math.round(geometry.top),
-      Math.round(comparison.top + (this.get('index') * comparison.height))
+      Math.round(comparison.top + (this.index * comparison.height))
     );
   });
 
@@ -118,7 +117,7 @@ module('Integration | Component | ella treadmill item', function(hooks) {
 
     let element = document.querySelector('ella-treadmill-item');
 
-    assert.equal(get(actionTriggered, 'element'), element);
+    assert.equal(actionTriggered.element, element);
   });
 
   test('it triggers an "on-destroy" action before removed from the DOM', async function(assert) {

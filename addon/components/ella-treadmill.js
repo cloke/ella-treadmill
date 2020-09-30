@@ -377,9 +377,9 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   columns: computed('minColumnWidth', 'elementWidth', function() {
-    let col = get(this, 'minColumnWidth');
+    let col = this.minColumnWidth;
     let colUnit = this.unitString(col);
-    let elementWidth = get(this, 'elementWidth');
+    let elementWidth = this.elementWidth;
     let result;
 
     col = parseFloat(col, 10);
@@ -408,7 +408,7 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   'data-scroll-top': computed('scrollTop', function() {
-    return get(this, 'scrollTop') || '0';
+    return this.scrollTop || '0';
   }).readOnly(),
 
   /**
@@ -422,7 +422,7 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   indices: computed('numberOfVisibleItems', function() {
-    return [...Array(get(this, 'numberOfVisibleItems'))];
+    return [...Array(this.numberOfVisibleItems)];
   }).readOnly(),
 
   /**
@@ -443,7 +443,7 @@ const EllaTreadmill = Component.extend({
    */
   moveTo: computed('_moveTo', {
     get() {
-      return get(this, '_moveTo');
+      return this._moveTo;
     },
 
     set(key, value) {
@@ -462,7 +462,7 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   numberOfVisibleItems: computed('visibleRows', 'columns', 'content.[]', function() {
-    return Math.min(get(this, 'visibleRows') * get(this, 'columns'), get(this, 'content.length') || 0);
+    return Math.min(this.visibleRows * this.columns, get(this, 'content.length') || 0);
   }).readOnly(),
 
   /**
@@ -473,9 +473,9 @@ const EllaTreadmill = Component.extend({
    * @public
    * @readOnly
    */
-  rowCount: computed('parentHeight', 'itemHeight', function() {
-    let parentHeight = get(this, 'parentHeight') || get(this, '_defaultHeight');
-    let itemHeight = get(this, 'itemHeight');
+  rowCount: computed('_defaultHeight', 'itemHeight', 'parentHeight', function() {
+    let parentHeight = this.parentHeight || this._defaultHeight;
+    let itemHeight = this.itemHeight;
     let rowCount = (parentHeight / itemHeight) || 0;
 
     return (rowCount && rowCount !== Infinity) ? Math.ceil(rowCount) : 0;
@@ -492,15 +492,15 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   startingIndex: computed('topDelta', 'itemHeight', 'numberOfVisibleItems', 'content.[]', 'columns', '_overdrawRows', function() {
-    let columns = get(this, 'columns');
-    let idx = Math.floor(get(this, 'topDelta') / get(this, 'itemHeight')) * columns;
+    let columns = this.columns;
+    let idx = Math.floor(this.topDelta / this.itemHeight) * columns;
     let len = get(this, 'content.length');
-    let od = get(this, '_overdrawRows');
+    let od = this._overdrawRows;
 
     // Adjust starting index for overdraw above "stage"
     idx = idx - (od * columns);
 
-    return Math.min(len - get(this, 'numberOfVisibleItems'), Math.max(0, idx)) || 0;
+    return Math.min(len - this.numberOfVisibleItems, Math.max(0, idx)) || 0;
   }).readOnly(),
 
   /**
@@ -512,7 +512,7 @@ const EllaTreadmill = Component.extend({
    * @public
    * @readOnly
    */
-  topDelta: computed('scrollTop', function() {
+  topDelta: computed('geometryElement.top', 'geometryParent.top', 'scrollTop', function() {
     let elementTop = get(this, 'geometryElement.top');
     let parentTop = get(this, 'geometryParent.top') || 0;
 
@@ -533,8 +533,8 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   totalHeight: computed('content.[]', '_row', 'columns', function() {
-    let row = parseFloat(get(this, '_row'), 10);
-    let columns = parseFloat(get(this, 'columns'), 10);
+    let row = parseFloat(this._row, 10);
+    let columns = parseFloat(this.columns, 10);
     let len = get(this, 'content.length');
 
     return row * Math.ceil(len / columns);
@@ -549,10 +549,7 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   visibleContent: computed('visibleIndexes', '_content', function() {
-    let {
-      visibleIndexes,
-      _content
-    } = getProperties(this, 'visibleIndexes', '_content');
+    let { visibleIndexes, _content } = this;
 
     return A(_content.objectsAt(visibleIndexes));
   }).readOnly(),
@@ -566,10 +563,7 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   visibleIndexes: computed('startingIndex', 'numberOfVisibleItems', 'content.[]', function() {
-    let {
-      startingIndex,
-      numberOfVisibleItems
-    } = getProperties(this, 'startingIndex', 'numberOfVisibleItems');
+    let { startingIndex, numberOfVisibleItems } = this;
 
     let mod = startingIndex % numberOfVisibleItems;
     let page = Math.floor(startingIndex / numberOfVisibleItems);
@@ -598,7 +592,7 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   visibleRows: computed('rowCount', '_overdrawRows', function() {
-    let { rowCount, _overdrawRows } = getProperties(this, 'rowCount', '_overdrawRows');
+    let { rowCount, _overdrawRows } = this;
 
     return (Math.ceil(rowCount + (2 * _overdrawRows)) || 0) + 1;
   }).readOnly(),
@@ -612,7 +606,7 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   _cancelAnimationFrameFn: computed(function() {
-    return get(window || {}, 'cancelAnimationFrame') || clearTimeout;
+    return (window || {}).cancelAnimationFrame || clearTimeout;
   }).readOnly(),
 
   /**
@@ -624,7 +618,7 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   _content: computed('content.[]', function() {
-    let content = get(this, 'content');
+    let content = this.content;
 
     if (typeof content.objectsAt !== 'function') {
       content = A([].concat(content));
@@ -642,8 +636,8 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   _overdrawRows: computed('rowCount', 'overdraw', function() {
-    let rowCount = get(this, 'rowCount');
-    let od = (parseInt(get(this, 'overdraw'), 10) || 0) / 100;
+    let rowCount = this.rowCount;
+    let od = (parseInt(this.overdraw, 10) || 0) / 100;
 
     return Math.ceil(rowCount * od)
   }).readOnly(),
@@ -656,9 +650,9 @@ const EllaTreadmill = Component.extend({
    * @private
    * @readOnly
    */
-  _resizeHandler: computed(function() {
+  _resizeHandler: computed('resizeTask', function() {
     let callback = () => {
-      get(this, 'resizeTask').perform();
+      this.resizeTask.perform();
     };
 
     return callback;
@@ -673,7 +667,7 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   _requestAnimationFrameFn: computed(function() {
-    return get(window || {}, 'requestAnimationFrame') || function (fn) {
+    return (window || {}).requestAnimationFrame || function (fn) {
       return setTimeout(fn, 20);
     };
   }).readOnly(),
@@ -688,8 +682,8 @@ const EllaTreadmill = Component.extend({
    * @private
    * @readOnly
    */
-  _row: computed('row', 'parentHeight', function() {
-    let row = get(this, 'row') || '';
+  _row: computed('_defaultHeight', 'parentHeight', 'row', function() {
+    let row = this.row || '';
     let rowUnit = this.unitString(row);
     let parent;
     let parentHeight;
@@ -700,7 +694,7 @@ const EllaTreadmill = Component.extend({
     switch (rowUnit) {
       case '%':
         parent = this.scrollingParent();
-        parentHeight = get(parent, 'clientHeight') || get(this, '_defaultHeight');
+        parentHeight = parent.clientHeight || this._defaultHeight;
         result = (row / 100) * parentHeight;
         break;
       default:
@@ -722,7 +716,7 @@ const EllaTreadmill = Component.extend({
    * @readOnly
    */
   _rowUnit: computed('row', function() {
-    let row = get(this, 'row') || '';
+    let row = this.row;
     let rowUnit = this.unitString(row);
     let result;
 
@@ -746,9 +740,9 @@ const EllaTreadmill = Component.extend({
    * @private
    * @readOnly
    */
-  _scrollHandler: computed(function() {
+  _scrollHandler: computed('scrollTask', function() {
     let callback = () => {
-      get(this, 'scrollTask').perform();
+      this.scrollTask.perform();
     };
 
     return callback;
@@ -765,7 +759,7 @@ const EllaTreadmill = Component.extend({
 
   actions: {
     listItemInserted(item) {
-      if (!get(this, 'sampleItem')) {
+      if (!this.sampleItem) {
         set(this, 'sampleItem', item);
       }
     },
@@ -778,14 +772,14 @@ const EllaTreadmill = Component.extend({
     },
 
     listItemDestroyed(item) {
-      if (get(this, 'sampleItem') === item) {
+      if (this.sampleItem === item) {
         set(this, 'sampleItem', null);
       }
     }
   },
 
   resizeTask: task(function* () {
-    if (get(this, 'resizing') === 0) {
+    if (this.resizing === 0) {
       this.sendStateUpdate('on-resize-start');
     }
 
@@ -802,7 +796,7 @@ const EllaTreadmill = Component.extend({
   }).restartable(),
 
   scrollTask: task(function* () {
-    if (get(this, 'scrolling') === 0) {
+    if (this.scrolling === 0) {
       this.sendStateUpdate('on-scroll-start');
     }
 
@@ -819,7 +813,7 @@ const EllaTreadmill = Component.extend({
   }).restartable(),
 
   moveToTask: task(function* () {
-    let moveTo = get(this, 'moveTo');
+    let moveTo = this.moveTo;
 
     if (moveTo) {
       yield this.scrollToIndex(moveTo);
@@ -836,7 +830,7 @@ const EllaTreadmill = Component.extend({
    * @public
    */
   scrollingParent() {
-    let element = get(this, 'element');
+    let element = this.element;
 
     if (!element) {
       return window || FAKE_WINDOW;
@@ -859,17 +853,17 @@ const EllaTreadmill = Component.extend({
 
   scrollToIndex(idx) {
     let parent = this.scrollingParent();
-    let element = get(this, 'element');
+    let element = this.element;
 
     if (!parent || !element) {
       return this;
     }
 
-    let columns = get(this, 'columns');
+    let columns = this.columns;
     let itemHeight = get(this, 'sampleItem.element.clientHeight');
     let row = Math.floor(idx / columns);
     let top = row * itemHeight;
-    let delta = get(this, 'scrollTop') - get(this, 'topDelta');
+    let delta = this.scrollTop - this.topDelta;
 
     if (typeof parent.scrollTo === 'function') {
       parent.scrollTo(parent.scrollX, top + delta);
@@ -946,21 +940,21 @@ const EllaTreadmill = Component.extend({
    */
   updateGeometry() {
     let parent = this.scrollingParent();
-    let geometryParent = get(this, 'geometryParent');
+    let geometryParent = this.geometryParent;
 
     setProperties(this, {
       scrollTop: (parent ? (parent.scrollTop || parent.scrollY) : 0) || null,
-      parentHeight: get(geometryParent, 'height') || get(this, '_defaultHeight'),
-      parentWidth: get(geometryParent, 'width') || get(this, '_defaultWidth'),
-      elementHeight: get(this, 'element.clientHeight') || get(this, '_defaultHeight'),
-      elementWidth: get(this, 'element.clientWidth') || get(this, '_defaultWidth')
+      parentHeight: geometryParent.height || this._defaultHeight,
+      parentWidth: geometryParent.width || this._defaultWidth,
+      elementHeight: get(this, 'element.clientHeight') || this._defaultHeight,
+      elementWidth: get(this, 'element.clientWidth') || this._defaultWidth
     });
 
     return this;
   },
 
   _rafWatcherBegin() {
-    let rafFn = get(this, '_requestAnimationFrameFn');
+    let rafFn = this._requestAnimationFrameFn;
 
     let step = () => {
       this._rafWatcherPerform();
@@ -977,7 +971,7 @@ const EllaTreadmill = Component.extend({
   },
 
   _rafWatcherEnd() {
-    let rafCancelFn = get(this, '_cancelAnimationFrameFn');
+    let rafCancelFn = this._cancelAnimationFrameFn;
 
     if (this.__rafId__) {
       rafCancelFn(this.__rafId__);
@@ -997,8 +991,8 @@ const EllaTreadmill = Component.extend({
 
     let elementWidth = get(this, 'element.clientWidth');
     let elementHeight = get(this, 'element.clientHeight');
-    let parentWidth = get(parent, 'clientWidth') || get(parent, 'innerWidth');
-    let parentHeight = get(parent, 'clientHeight') || get(parent, 'innerHeight');
+    let parentWidth = parent.clientWidth || parent.innerWidth;
+    let parentHeight = parent.clientHeight || parent.innerHeight;
     let sizeChanged = false;
 
     if (
@@ -1014,8 +1008,8 @@ const EllaTreadmill = Component.extend({
       this.__parentHeight__ = parentHeight;
     }
 
-    let scrollHandler = get(this, '_scrollHandler');
-    let resizeHandler = get(this, '_resizeHandler');
+    let scrollHandler = this._scrollHandler;
+    let resizeHandler = this._resizeHandler;
 
     let callHandlers = () => {
       if (scrollChanged) {
@@ -1026,10 +1020,10 @@ const EllaTreadmill = Component.extend({
         resizeHandler();
       }
 
-      get(this, 'moveToTask').perform();
+      this.moveToTask.perform();
     }
 
-    if (scrollChanged || sizeChanged || get(this, '_moveTo')) {
+    if (scrollChanged || sizeChanged || this._moveTo) {
       run(callHandlers);
     }
   },
@@ -1040,8 +1034,8 @@ const EllaTreadmill = Component.extend({
     this.__elementWidth__ = get(this, 'element.clientWidth');
     this.__elementHeight__ = get(this, 'element.clientHeight');
 
-    this.__parentWidth__ = get(parent, 'clientWidth') || get(parent, 'innerWidth');
-    this.__parentHeight__ = get(parent, 'clientHeight') || get(parent, 'innerHeight');
+    this.__parentWidth__ = parent.clientWidth || parent.innerWidth;
+    this.__parentHeight__ = parent.clientHeight || parent.innerHeight;
 
     this.__scrollTop__ = parent ? (parent.scrollTop || parent.scrollY) : 0;
 
@@ -1060,7 +1054,7 @@ const EllaTreadmill = Component.extend({
  */
 Object.defineProperty(EllaTreadmill.prototype, 'geometryElement', {
   get() {
-    let element = get(this, 'element');
+    let element = this.element;
 
     if (!element) {
       return {};
